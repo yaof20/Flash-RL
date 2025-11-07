@@ -31,6 +31,14 @@ def check_vllm_installed():
     except ImportError:
         return False
 
+def check_sglang_installed():
+    """Check if sglang is installed"""
+    try:
+        import sglang
+        return True
+    except ImportError:
+        return False
+
 def check_dist_initialized():
     """Check if distributed environment is initialized"""
     try:
@@ -40,7 +48,7 @@ def check_dist_initialized():
         return False
 
 # Check if patching is needed based on environment variables
-if 'FLASHRL_CONFIG' in os.environ and check_vllm_installed():
+if 'FLASHRL_CONFIG' in os.environ and 'SGLANG_PATCH' not in os.environ and check_vllm_installed():
     
     from .vllm_patch import patch_vllm_llm, patch_vllm_process_weights_after_loading, patch_vllm_fp8_create_weight 
 
@@ -64,5 +72,12 @@ if 'FLASHRL_CONFIG' in os.environ and check_vllm_installed():
         from .vllm_patch import patch_vllm_lmhead_to_fp32
         patch_status = patch_vllm_lmhead_to_fp32()
         logger.debug(f"Patching vllm lmhead to fp32... status: {patch_status}")
+elif 'FLASHRL_CONFIG' in os.environ and 'SGLANG_PATCH' in os.environ and check_sglang_installed():
+    from .sglang_patch import patch_sglang_Engine, patch_sglang_load_weights_and_postprocess
+    patch_status = patch_sglang_Engine()
+    logger.debug(f"Patching the sglang Engine status: {patch_status}")
+
+    patch_status = patch_sglang_load_weights_and_postprocess()
+    logger.debug(f"Patching the sglang load_weights_and_postprocess status: {patch_status}")
 else:
     logger.debug("Skipping the patching of vllm")
