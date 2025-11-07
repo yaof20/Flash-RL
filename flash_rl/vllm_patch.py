@@ -47,6 +47,8 @@ recorded_loader_keys = [
     'output_dim',
     'input_dim',
     '_assert_and_load',
+    'tp_rank',
+    'tp_size',
 ]
 
 def hacked_process_weights_after_loading(
@@ -823,4 +825,3 @@ def patch_vllm_llm_test_reload():
     except Exception as e:
         logger.error(f"Error patching vllm reload LLM: {e}")
         return False
-
